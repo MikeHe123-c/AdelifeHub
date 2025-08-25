@@ -52,18 +52,26 @@ Built with **Spring Boot + MySQL + React**, featuring JWT authentication and RES
 
 ---
 
+## 安装
+
+克隆仓库并进入目录：
+```bash
+git clone https://github.com/你的用户名/你的项目名.git
+cd 你的项目名
+
+
 
 ### ▶ 🚀 Quick Start 快速开始
 
-```bash
-Backend 启动后端
 
+#### Backend 启动后端
+```bash
 cd backend
 mvn spring-boot:run
 
 
-Frontend 启动前端
-
+#### Frontend 启动前端
+```bash
 cd frontend
 npm install
 npm start
