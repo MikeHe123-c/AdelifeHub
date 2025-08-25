@@ -55,7 +55,7 @@ Built with **Spring Boot + MySQL + React**, featuring JWT authentication and RES
 
 ### ▶ 🚀 Quick Start 快速开始
 
-
+```bash
 Backend 启动后端
 
 cd backend
