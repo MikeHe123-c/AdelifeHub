@@ -44,3 +44,15 @@ Built with **Spring Boot + MySQL + React**, featuring JWT authentication and RES
 ```bash
 cd backend
 mvn spring-boot:run
+
+### 前端启动
+```bash
+cd frontend
+npm install
+npm start
+
+
+### Authors
+- Fengyi Lin – Frontend
+- Sichang He – Database
+- Zicheng Yu – Backend
