@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adlifehub.adlife.mapper.PostMapper">
+    <resultMap id="PostMap" type="com.adlifehub.adlife.model.Post">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="images_json" property="images"
+                typeHandler="com.adlifehub.adlife.mybatis.JsonStringListTypeHandler"/>
+        <result column="author_id" property="authorId"/>
+        <result column="likes" property="likes"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted_at" property="deletedAt"/>
+        <result column="deleted_by" property="deletedBy"/>
+        <result column="delete_reason" property="deleteReason"/>
+    </resultMap>
+    <select id="findById" parameterType="long" resultMap="PostMap">select *
+                                                                   from posts
+                                                                   where id = #{id}</select>
+    <select id="listActive" resultMap="PostMap">select *
+                                                from posts
+                                                where status = 'active'
+                                                order by created_at desc limit #{limit}
+                                                offset #{offset}</select>
+    <select id="countActive" resultType="int">select count(*)
+                                              from posts
+                                              where status = 'active'</select>
+    <select id="listByAuthor" resultMap="PostMap">
+        select * from posts where author_id=#{authorId} <if test="status != null">and
+        status=#{status}
+    </if> order by created_at desc limit #{limit} offset #{offset}
+    </select>
+    <select id="countByAuthor" resultType="int">select count(*) from posts where
+        author_id=#{authorId}
+        <if test="status != null">and status=#{status}</if>
+    </select>
+    <insert id="insert" parameterType="com.adlifehub.adlife.model.Post" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into posts(title, content, images_json, author_id, likes, status, created_at,
+                          updated_at)
+        values (#{title}, #{content},
+                #{images, typeHandler=com.adlifehub.adlife.mybatis.JsonStringListTypeHandler},
+                #{authorId}, #{likes}, #{status}, #{createdAt}, #{updatedAt})
+    </insert>
+    <update id="update" parameterType="com.adlifehub.adlife.model.Post">
+        update posts
+        set title=#{title},
+            content=#{content},
+            images_json=#{images, typeHandler=com.adlifehub.adlife.mybatis.JsonStringListTypeHandler},
+            updated_at=#{updatedAt}
+        where id = #{id}
+    </update>
+    <update id="softDelete">update posts
+                            set status='deleted',
+                                deleted_at=#{deletedAt},
+                                deleted_by=#{deletedBy},
+                                delete_reason=#{reason}
+                            where id = #{id}</update>
+    <update id="restore">update posts
+                         set status='active',
+                             deleted_at=NULL,
+                             deleted_by=NULL,
+                             delete_reason=NULL
+                         where id = #{id}</update>
+</mapper>
