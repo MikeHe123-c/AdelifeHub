@@ -63,15 +63,12 @@ cd 你的项目名
 
 ### ▶ 🚀 Quick Start 快速开始
 
-
-#### Backend 启动后端
 ```bash
+# Backend
 cd backend
 mvn spring-boot:run
 
-
-#### Frontend 启动前端
-```bash
+# Frontend
 cd frontend
 npm install
 npm start
