@@ -1,2 +1,0 @@
-package com.adlifehub.adlife.model; import lombok.Data; import java.time.OffsetDateTime; @Data
-public class Post { public Long id; public String title; public String content; public java.util.List<String> images; public Long authorId; public Integer likes; public String status; public OffsetDateTime createdAt; public OffsetDateTime updatedAt; public OffsetDateTime deletedAt; public Long deletedBy; public String deleteReason; }
