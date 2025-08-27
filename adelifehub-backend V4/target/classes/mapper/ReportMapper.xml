@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adlifehub.adlife.mapper.ReportMapper">
+    <resultMap id="ReportMap" type="com.adlifehub.adlife.model.Report">
+        <id column="id" property="id"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="reporter_id" property="reporterId"/>
+        <result column="reason_code" property="reasonCode"/>
+        <result column="reason_text" property="reasonText"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+    <insert id="insert" parameterType="com.adlifehub.adlife.model.Report" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into reports(target_type, target_id, reporter_id, reason_code, reason_text, status,
+                            created_at)
+        values (#{targetType}, #{targetId}, #{reporterId}, #{reasonCode}, #{reasonText}, #{status},
+                #{createdAt})
+    </insert>
+    <select id="list" resultMap="ReportMap">select * from reports where 1=1 <if
+            test="status != null">and status=#{status}
+    </if>
+        <if test="type != null">and target_type=#{type}</if> order by created_at desc limit #{limit}
+        offset #{offset}
+    </select>
+    <select id="count" resultType="int">select count(*) from reports where 1=1 <if
+            test="status != null">and status=#{status}
+    </if>
+        <if test="type != null">and target_type=#{type}</if>
+    </select>
+    <select id="findById" resultMap="ReportMap">select *
+                                                from reports
+                                                where id = #{id}</select>
+    <update id="updateStatus">update reports
+                              set status=#{status}
+                              where id = #{id}</update>
+</mapper>
