@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adlifehub.adlife.mapper.ListingMapper">
+    <resultMap id="ListingMap" type="com.adlifehub.adlife.model.Listing">
+        <id column="id" property="id"/>
+        <result column="type" property="type"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="price" property="price"/>
+        <result column="price_unit" property="priceUnit"/>
+        <result column="location" property="location"/>
+        <result column="latitude" property="latitude"/>
+        <result column="longitude" property="longitude"/>
+        <result column="images_json" property="images"
+                typeHandler="com.adlifehub.adlife.mybatis.JsonStringListTypeHandler"/>
+        <result column="status" property="status"/>
+        <result column="author_id" property="authorId"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted_at" property="deletedAt"/>
+        <result column="deleted_by" property="deletedBy"/>
+        <result column="delete_reason" property="deleteReason"/>
+    </resultMap>
+    <sql id="baseSelect">select l.*
+                         from listings l</sql>
+    <select id="findById" resultMap="ListingMap">
+        <include refid="baseSelect"/>
+        where l.id=
+        #{id}
+    </select>
+    <select id="list" resultMap="ListingMap">
+        <include refid="baseSelect"/>
+        where (l.status='active' or l.status='closed') <if test="type != null">and l.type=#{type}
+    </if> order by l.created_at desc limit #{limit} offset #{offset}
+    </select>
+    <select id="count" resultType="int">select count(*) from listings l where (l.status='active' or
+        l.status='closed')
+        <if test="type != null">and l.type=#{type}</if>
+    </select>
+    <select id="listByAuthor" resultMap="ListingMap">
+        <include refid="baseSelect"/>
+        where l.author_id=#{authorId} <if test="status != null">and l.status=#{status}</if> order by
+        l.created_at desc limit #{limit} offset #{offset}
+    </select>
+    <select id="countByAuthor" resultType="int">select count(*) from listings l where
+        l.author_id=#{authorId}
+        <if test="status != null">and l.status=#{status}</if>
+    </select>
+    <insert id="insert" parameterType="com.adlifehub.adlife.model.Listing" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into listings(type, title, content, price, price_unit, location, latitude, longitude,
+                             images_json, status, author_id, created_at, updated_at)
+        values (#{type}, #{title}, #{content}, #{price}, #{priceUnit}, #{location}, #{latitude},
+                #{longitude},
+                #{images, typeHandler=com.adlifehub.adlife.mybatis.JsonStringListTypeHandler},
+                #{status}, #{authorId}, #{createdAt}, #{updatedAt})
+    </insert>
+    <update id="update" parameterType="com.adlifehub.adlife.model.Listing">
+        update listings
+        set title=#{title},
+            content=#{content},
+            price=#{price},
+            price_unit=#{priceUnit},
+            location=#{location},
+            latitude=#{latitude},
+            longitude=#{longitude},
+            images_json=#{images, typeHandler=com.adlifehub.adlife.mybatis.JsonStringListTypeHandler},
+            updated_at=#{updatedAt}
+        where id = #{id}
+    </update>
+    <update id="softDelete">update listings
+                            set status='deleted',
+                                deleted_at=#{deletedAt},
+                                deleted_by=#{deletedBy},
+                                delete_reason=#{reason}
+                            where id = #{id}</update>
+    <update id="restore">update listings
+                         set status='active',
+                             deleted_at=NULL,
+                             deleted_by=NULL,
+                             delete_reason=NULL
+                         where id = #{id}</update>
+</mapper>

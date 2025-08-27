@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adlifehub.adlife.mapper.ListingMapper">
+
+    <resultMap id="ListingMap" type="com.adlifehub.adlife.model.Listing">
+        <id column="id" property="id"/>
+        <result column="type" property="type"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="price" property="price"/>
+        <result column="price_unit" property="priceUnit"/>
+        <result column="location" property="location"/>
+        <result column="latitude" property="latitude"/>
+        <result column="longitude" property="longitude"/>
+        <result column="images_json" property="images"
+                typeHandler="com.adlifehub.adlife.mybatis.JsonStringListTypeHandler"/>
+        <result column="status" property="status"/>
+        <result column="author_id" property="authorId"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="deleted_at" property="deletedAt"/>
+        <result column="deleted_by" property="deletedBy"/>
+        <result column="delete_reason" property="deleteReason"/>
+    </resultMap>
+
+    <sql id="baseSelect">
+        SELECT l.* FROM listings l
+    </sql>
+
+    <select id="findById" resultMap="ListingMap">
+        <include refid="baseSelect"/>
+        WHERE l.id = #{id}
+    </select>
+
+    <select id="list" resultMap="ListingMap">
+        <include refid="baseSelect"/>
+        WHERE (l.status = 'active' OR l.status = 'closed')
+        <if test="type != null">
+            AND l.type = #{type}
+        </if>
+        ORDER BY l.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM listings l
+        WHERE (l.status = 'active' OR l.status = 'closed')
+        <if test="type != null">
+            AND l.type = #{type}
+        </if>
+    </select>
+
+    <select id="listByAuthor" resultMap="ListingMap">
+        <include refid="baseSelect"/>
+        WHERE l.author_id = #{authorId}
+        <if test="status != null">
+            AND l.status = #{status}
+        </if>
+        ORDER BY l.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByAuthor" resultType="int">
+        SELECT COUNT(*) FROM listings l
+        WHERE l.author_id = #{authorId}
+        <if test="status != null">
+            AND l.status = #{status}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="com.adlifehub.adlife.model.Listing" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO listings
+        (type, title, content, price, price_unit, location,
+         latitude, longitude, images_json, status, author_id, created_at, updated_at)
+        VALUES
+            (#{type}, #{title}, #{content}, #{price}, #{priceUnit}, #{location},
+             #{latitude}, #{longitude},
+             #{images, typeHandler=com.adlifehub.adlife.mybatis.JsonStringListTypeHandler},
+             #{status}, #{authorId}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update" parameterType="com.adlifehub.adlife.model.Listing">
+        UPDATE listings
+        SET title = #{title},
+            content = #{content},
+            price = #{price},
+            price_unit = #{priceUnit},
+            location = #{location},
+            latitude = #{latitude},
+            longitude = #{longitude},
+            images_json = #{images, typeHandler=com.adlifehub.adlife.mybatis.JsonStringListTypeHandler},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <update id="softDelete">
+        UPDATE listings
+        SET status = 'deleted',
+            deleted_at = #{deletedAt},
+            deleted_by = #{deletedBy},
+            delete_reason = #{reason}
+        WHERE id = #{id}
+    </update>
+
+    <update id="restore">
+        UPDATE listings
+        SET status = 'active',
+            deleted_at = NULL,
+            deleted_by = NULL,
+            delete_reason = NULL
+        WHERE id = #{id}
+    </update>
+
+    <!-- 我发布的（Map 结果） -->
+    <select id="findByAuthor" resultType="map">
+        SELECT
+        id,
+        title,
+        type,
+        status,
+        author_id AS userId,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+        FROM listings
+        WHERE author_id = #{authorId}
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+</mapper>

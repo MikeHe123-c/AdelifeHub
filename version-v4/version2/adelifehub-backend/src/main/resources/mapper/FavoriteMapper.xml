@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adlifehub.adlife.mapper.FavoriteMapper">
+  <resultMap id="FavItem" type="com.adlifehub.adlife.dto.FavoriteItemDto">
+    <result column="kind" property="kind"/>
+    <result column="listing_type" property="listingType"/>
+    <result column="fav_created_at" property="favCreatedAt"/>
+    <result column="id" property="id"/>
+    <result column="title" property="title"/>
+    <result column="price" property="price"/>
+    <result column="price_unit" property="priceUnit"/>
+    <result column="location" property="location"/>
+    <result column="image" property="image"/>
+    <result column="likes" property="likes"/>
+    <result column="excerpt" property="excerpt"/>
+  </resultMap>
+  <insert id="insertListingFav">insert ignore into listing_favorites(user_id, listing_id, created_at) values(#{userId}, #{listingId}, #{createdAt})</insert>
+  <delete id="deleteListingFav">delete from listing_favorites where user_id=#{userId} and listing_id=#{listingId}</delete>
+  <insert id="insertPostFav">insert ignore into post_favorites(user_id, post_id, created_at) values(#{userId}, #{postId}, #{createdAt})</insert>
+  <delete id="deletePostFav">delete from post_favorites where user_id=#{userId} and post_id=#{postId}</delete>
+  <select id="listFavorites" resultMap="FavItem">
+    (select 'listing' as kind, l.type as listing_type, lf.created_at as fav_created_at, l.id,
+    l.title, l.price, l.price_unit, l.location, JSON_EXTRACT(l.images_json, '$[0]') as image, null
+    as likes, null as excerpt
+    from listing_favorites lf join listings l on l.id=lf.listing_id where lf.user_id=#{userId} <if
+          test="listingType != null">and l.type=#{listingType}</if>)
+    union all
+    (select 'post' as kind, null as listing_type, pf.created_at as fav_created_at, p.id, p.title,
+    null as price, null as price_unit, null as location, JSON_EXTRACT(p.images_json, '$[0]') as
+    image, p.likes as likes, SUBSTRING(p.content,1,120) as excerpt
+    from post_favorites pf join posts p on p.id=pf.post_id where pf.user_id=#{userId})
+    <if test="targetType != null">having kind=#{targetType}</if>
+    order by fav_created_at desc limit #{limit} offset #{offset}
+  </select>
+  <select id="countFavorites" resultType="int">
+    select ((select count(*) from listing_favorites lf join listings l on l.id=lf.listing_id where lf.user_id=#{userId} <if test="listingType != null">and l.type=#{listingType}</if>) + (select count(*) from post_favorites pf where pf.user_id=#{userId}))
+  </select>
+  <delete id="deleteFavoritesByListing">delete from listing_favorites where listing_id=#{listingId}</delete>
+  <delete id="deleteFavoritesByPost">delete from post_favorites where post_id=#{postId}</delete>
+</mapper>
